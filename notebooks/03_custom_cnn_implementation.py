@@ -364,11 +364,14 @@ def pool_backward(dA, cache, mode="max"):
                     
                     if mode == "max":
                         a_prev_slice = a_prev[vert_start:vert_end, horiz_start:horiz_end, c]
-                        mask = (a_prev_slice == np.max(a_prev_slice))
-                        dA_prev[i, vert_start:vert_end, horiz_start:horiz_end, c] += mask * dA[i, h, w, c]
+                        if a_prev_slice.size > 0:  # Überprüfen, ob das Array nicht leer ist
+                            mask = (a_prev_slice == np.max(a_prev_slice))
+                            dA_prev[i, vert_start:vert_end, horiz_start:horiz_end, c] += mask * dA[i, h, w, c]
                     elif mode == "average":
                         da = dA[i, h, w, c]
-                        dA_prev[i, vert_start:vert_end, horiz_start:horiz_end, c] += da / (f * f)
+                        size = (vert_end - vert_start) * (horiz_end - horiz_start)
+                        if size > 0:  # Überprüfen, ob die Größe nicht null ist
+                            dA_prev[i, vert_start:vert_end, horiz_start:horiz_end, c] += da / size
     
     return dA_prev
 
@@ -484,7 +487,20 @@ def model_backward(AL, Y, caches):
     gradients['db_fc'] = db_fc
     
     # Reshape dA_flat zurück in die Form der letzten Pooling-Schicht
-    dA = dA_flat.reshape(caches[L-2][2][0].shape)
+    # Berechne die korrekte Form basierend auf dem letzten Pool-Cache
+    last_pool_shape = caches[L-2][2][0].shape
+    # Prüfe, ob die Dimensionen kompatibel sind
+    if dA_flat.size != np.prod(last_pool_shape):
+        # Wenn nicht kompatibel, verwende eine sichere Reshape-Operation
+        # Berechne die neue Form basierend auf der Größe von dA_flat
+        n_samples = last_pool_shape[0]
+        height = last_pool_shape[1]
+        width = last_pool_shape[2]
+        n_channels = dA_flat.size // (n_samples * height * width)
+        dA = dA_flat.reshape(n_samples, height, width, n_channels)
+    else:
+        # Wenn kompatibel, verwende die ursprüngliche Form
+        dA = dA_flat.reshape(last_pool_shape)
     
     # Rückwärtsdurchlauf für die Faltungsschichten
     for l in reversed(range(L-1)):

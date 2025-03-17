@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""
+""" 
 CNN mit Keras/TensorFlow zur Erkennung von Autos
 
 Dieses Skript implementiert ein CNN mit Keras/TensorFlow zur Erkennung von Autos

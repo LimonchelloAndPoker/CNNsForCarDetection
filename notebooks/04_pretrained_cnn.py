@@ -1,63 +1,35 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-"""
-Vortrainiertes CNN für Autoerkennung
-
-Dieses Skript lädt ein vortrainiertes CNN-Modell und trainiert es für die Autoerkennung
-im CIFAR-10 Datensatz (Aufgabe 1c).
-"""
-
+import os
 import numpy as np
-import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow.keras.applications import MobileNetV2
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Input
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
 from tensorflow.keras.optimizers import Adam
-import os
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
+import matplotlib.pyplot as plt
 
-# Verzeichnisse
-data_dir = '../data'
-models_dir = '../models'
+# Verzeichnisse erstellen
+models_dir = os.path.join('..', 'models')
 os.makedirs(models_dir, exist_ok=True)
 
 # Laden der vorbereiteten Daten
 print("Laden der vorbereiteten Daten...")
-x_train = np.load(os.path.join(data_dir, 'x_train.npy'))
-y_train = np.load(os.path.join(data_dir, 'y_train.npy'))
-x_test = np.load(os.path.join(data_dir, 'x_test.npy'))
-y_test = np.load(os.path.join(data_dir, 'y_test.npy'))
-y_train_binary = np.load(os.path.join(data_dir, 'y_train_binary.npy'))
-y_test_binary = np.load(os.path.join(data_dir, 'y_test_binary.npy'))
+x_train = np.load(os.path.join('..', 'data', 'x_train.npy'))
+y_train = np.load(os.path.join('..', 'data', 'y_train.npy'))
+x_test = np.load(os.path.join('..', 'data', 'x_test.npy'))
+y_test = np.load(os.path.join('..', 'data', 'y_test.npy'))
 
-print(f"Trainingsdaten: {x_train.shape[0]} Bilder")
-print(f"Testdaten: {x_test.shape[0]} Bilder")
-print(f"Anzahl der Auto-Bilder im Trainingsdatensatz: {np.sum(y_train_binary)}")
-print(f"Anzahl der Auto-Bilder im Testdatensatz: {np.sum(y_test_binary)}")
+print(f"Trainingsdaten: {len(x_train)} Bilder")
+print(f"Testdaten: {len(x_test)} Bilder")
 
-# Die Bilder müssen auf die Eingabegröße des vortrainierten Modells skaliert werden
-# MobileNetV2 erwartet Bilder der Größe 224x224
-def preprocess_images(images, target_size=(224, 224)):
-    processed_images = []
-    for img in images:
-        # Skalieren des Bildes auf die Zielgröße
-        resized_img = tf.image.resize(img, target_size)
-        processed_images.append(resized_img)
-    return np.array(processed_images)
+# Bilder auf die Größe anpassen, die das vortrainierte Modell erwartet
+input_shape = (224, 224, 3)
+x_train_resized = tf.image.resize(x_train, (input_shape[0], input_shape[1]))
+x_test_resized = tf.image.resize(x_test, (input_shape[0], input_shape[1]))
 
-# Vorverarbeitung der Bilder
-print("Vorverarbeitung der Bilder...")
-x_train_processed = preprocess_images(x_train)
-x_test_processed = preprocess_images(x_test)
-
-print(f"Vorverarbeitete Trainingsdaten: {x_train_processed.shape}")
-print(f"Vorverarbeitete Testdaten: {x_test_processed.shape}")
-
-# Laden des vortrainierten MobileNetV2-Modells
+# Vortrainiertes Modell laden
 print("Laden des vortrainierten MobileNetV2-Modells...")
-base_model = MobileNetV2(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
+base_model = MobileNetV2(weights='imagenet', include_top=False, input_shape=input_shape)
 
 # Einfrieren der vortrainierten Schichten
 for layer in base_model.layers:
@@ -73,133 +45,95 @@ predictions = Dense(1, activation='sigmoid')(x)
 model = Model(inputs=base_model.input, outputs=predictions)
 
 # Kompilieren des Modells
-model.compile(
-    optimizer=Adam(learning_rate=0.001),
-    loss='binary_crossentropy',
-    metrics=['accuracy']
-)
+model.compile(optimizer=Adam(learning_rate=0.001), 
+              loss='binary_crossentropy', 
+              metrics=['accuracy'])
 
-# Zusammenfassung des Modells
+# Zusammenfassung des Modells anzeigen
 model.summary()
 
 # Callbacks für das Training
-callbacks = [
-    EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True),
-    ModelCheckpoint(
-        filepath=os.path.join(models_dir, 'pretrained_car_detection_model.keras'),
-        monitor='val_accuracy',
-        save_best_only=True,
-        verbose=1
-    )
-]
+checkpoint = ModelCheckpoint(
+    os.path.join(models_dir, 'pretrained_car_detection_model.keras'),
+    monitor='val_accuracy',
+    save_best_only=True,
+    mode='max',
+    verbose=1
+)
+
+early_stopping = EarlyStopping(
+    monitor='val_accuracy',
+    patience=5,
+    restore_best_weights=True,
+    mode='max',
+    verbose=1
+)
 
 # Training des Modells
 print("Training des vortrainierten Modells...")
 history = model.fit(
-    x_train_processed, y_train_binary,
-    batch_size=32,
+    x_train_resized, y_train,
+    validation_data=(x_test_resized, y_test),
     epochs=20,
-    validation_split=0.2,
-    callbacks=callbacks,
-    verbose=1
+    batch_size=32,
+    callbacks=[checkpoint, early_stopping]
 )
+
+# Evaluierung des Modells
+print("Evaluierung des Modells auf den Testdaten...")
+test_loss, test_accuracy = model.evaluate(x_test_resized, y_test)
+print(f"Testgenauigkeit: {test_accuracy:.4f}")
+
+# Visualisierung der Trainingsergebnisse
+plt.figure(figsize=(12, 4))
+
+# Genauigkeit
+plt.subplot(1, 2, 1)
+plt.plot(history.history['accuracy'])
+plt.plot(history.history['val_accuracy'])
+plt.title('Modellgenauigkeit')
+plt.ylabel('Genauigkeit')
+plt.xlabel('Epoche')
+plt.legend(['Training', 'Validierung'], loc='lower right')
+
+# Verlust
+plt.subplot(1, 2, 2)
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('Modellverlust')
+plt.ylabel('Verlust')
+plt.xlabel('Epoche')
+plt.legend(['Training', 'Validierung'], loc='upper right')
+
+plt.tight_layout()
+plt.savefig(os.path.join(models_dir, 'pretrained_model_training.png'))
+print(f"Trainingsverlauf wurde gespeichert unter: {os.path.join(models_dir, 'pretrained_model_training.png')}")
 
 # Speichern des Modells
 model.save(os.path.join(models_dir, 'pretrained_car_detection_model.keras'))
 print(f"Modell wurde gespeichert unter: {os.path.join(models_dir, 'pretrained_car_detection_model.keras')}")
 
-# Evaluierung des Modells auf den Testdaten
-print("Evaluierung des Modells auf den Testdaten...")
-test_loss, test_accuracy = model.evaluate(x_test_processed, y_test_binary)
-print(f"Test Accuracy: {test_accuracy:.4f}")
-print(f"Test Loss: {test_loss:.4f}")
-
-# Visualisierung des Trainingsverlaufs
-plt.figure(figsize=(12, 4))
-
-# Accuracy
-plt.subplot(1, 2, 1)
-plt.plot(history.history['accuracy'], label='Training Accuracy')
-plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
-plt.title('Accuracy')
-plt.xlabel('Epoch')
-plt.ylabel('Accuracy')
-plt.legend()
-
-# Loss
-plt.subplot(1, 2, 2)
-plt.plot(history.history['loss'], label='Training Loss')
-plt.plot(history.history['val_loss'], label='Validation Loss')
-plt.title('Loss')
-plt.xlabel('Epoch')
-plt.ylabel('Loss')
-plt.legend()
-
-plt.tight_layout()
-plt.savefig(os.path.join(models_dir, 'pretrained_training_history.png'))
-print(f"Trainingsverlauf wurde gespeichert unter: {os.path.join(models_dir, 'pretrained_training_history.png')}")
-
-# Vorhersagen auf den Testdaten
-y_pred = model.predict(x_test_processed)
-y_pred_binary = (y_pred > 0.5).astype(int)
-
-# Berechnung von Precision, Recall und F1-Score
-from sklearn.metrics import classification_report, confusion_matrix
-
-print("Klassifikationsbericht:")
-print(classification_report(y_test_binary, y_pred_binary))
-
-# Konfusionsmatrix
-cm = confusion_matrix(y_test_binary, y_pred_binary)
-plt.figure(figsize=(8, 6))
-plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
-plt.title('Konfusionsmatrix')
-plt.colorbar()
-tick_marks = np.arange(2)
-plt.xticks(tick_marks, ['Nicht-Auto', 'Auto'])
-plt.yticks(tick_marks, ['Nicht-Auto', 'Auto'])
-
-# Beschriftung der Zellen mit den Werten
-thresh = cm.max() / 2.
-for i in range(cm.shape[0]):
-    for j in range(cm.shape[1]):
-        plt.text(j, i, format(cm[i, j], 'd'),
-                 horizontalalignment="center",
-                 color="white" if cm[i, j] > thresh else "black")
-
-plt.tight_layout()
-plt.ylabel('Tatsächliche Klasse')
-plt.xlabel('Vorhergesagte Klasse')
-plt.savefig(os.path.join(models_dir, 'pretrained_confusion_matrix.png'))
-print(f"Konfusionsmatrix wurde gespeichert unter: {os.path.join(models_dir, 'pretrained_confusion_matrix.png')}")
-
-# Visualisierung einiger Vorhersagen
-def plot_predictions(x, y_true, y_pred, num_images=25):
+# Einige Vorhersagen visualisieren
+def plot_predictions(X, y, predictions, num_images=25):
     plt.figure(figsize=(10, 10))
-    for i in range(num_images):
+    for i in range(min(num_images, len(X))):
         plt.subplot(5, 5, i+1)
         plt.xticks([])
         plt.yticks([])
         plt.grid(False)
-        plt.imshow(x[i])
+        plt.imshow(X[i])
         
-        predicted = "Auto" if y_pred[i] > 0.5 else "Nicht-Auto"
-        actual = "Auto" if y_true[i] == 1 else "Nicht-Auto"
-        
-        color = 'green' if predicted == actual else 'red'
-        plt.xlabel(f"P: {predicted}, A: {actual}", color=color)
+        color = 'green' if predictions[i] == y[i] else 'red'
+        label = "Auto" if predictions[i] == 1 else "Kein Auto"
+        plt.xlabel(label, color=color)
     
     plt.tight_layout()
-    plt.savefig(os.path.join(models_dir, 'pretrained_prediction_examples.png'))
-    print(f"Vorhersagebeispiele wurden gespeichert unter: {os.path.join(models_dir, 'pretrained_prediction_examples.png')}")
+    plt.savefig(os.path.join(models_dir, 'pretrained_model_predictions.png'))
+    print(f"Vorhersagen wurden gespeichert unter: {os.path.join(models_dir, 'pretrained_model_predictions.png')}")
 
-# Zufällige Auswahl von Testbildern
-np.random.seed(42)
-random_indices = np.random.choice(len(x_test), 25, replace=False)
-plot_predictions(
-    x_test[random_indices],
-    y_test_binary[random_indices],
-    y_pred[random_indices],
-)
+# Vorhersagen für Testdaten
+print("Generieren von Vorhersagen für Testdaten...")
+predictions = (model.predict(x_test_resized) > 0.5).astype(int).flatten()
+plot_predictions(x_test, y_test, predictions)
 
-print("Vortrainiertes CNN-Modell wurde erfolgreich trainiert und evaluiert.")
+print("Training und Evaluierung des vortrainierten Modells abgeschlossen.")

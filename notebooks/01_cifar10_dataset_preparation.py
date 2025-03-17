@@ -3,7 +3,7 @@
 
 """
 CIFAR-10 Dataset für CNN-Autoerkennung
-
+ 
 Dieses Skript lädt den CIFAR-10 Datensatz und bereitet ihn für das Training 
 unseres CNN zur Autoerkennung vor.
 """

@@ -4,7 +4,7 @@
 """
 Dokumentation der Ergebnisse und Lösungsschritte
 
-Dieses Skript dokumentiert die Ergebnisse und Lösungsschritte des Projekts
+Dieses Skript dokumentiert die Ergebnisse und Lösungsschritte des Projekts 
 zur Anwendung von Convolutional Neural Networks (CNN) zur Bilderkennung von Autos.
 """
 

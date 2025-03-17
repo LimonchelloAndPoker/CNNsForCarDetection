@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Bonus: CNN zur Erkennung von Personen
+Bonus: CNN zur Erkennung von Personen 
 
 Dieses Skript implementiert ein CNN zur Erkennung von Personen und wendet es auf Bilder an,
 die sowohl Personen als auch Autos enthalten (Bonus-Aufgabe).
