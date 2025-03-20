@@ -68,7 +68,7 @@ def load_and_preprocess_image(image_path, target_size=(32, 32)):
     return image, processed_image, (original_height, original_width)
 
 # Funktion zur Erkennung von Autos in einem Bild mit Sliding Window
-def detect_cars(image, model, window_size=(32, 32), stride=16, confidence_threshold=0.7):
+def detect_cars(image, model, window_size=(64, 64), stride=32, confidence_threshold=0.6):
     """
     Erkennt Autos in einem Bild mit Sliding Window.
     
@@ -185,8 +185,8 @@ def draw_boxes(image, boxes):
     return result
 
 # Funktion zur Erkennung von Autos in einem Bild mit Multi-Scale Sliding Window
-def detect_cars_multi_scale(image, model, scales=[0.5, 0.75, 1.0, 1.25, 1.5], 
-                           window_size=(32, 32), stride=16, confidence_threshold=0.7):
+def detect_cars_multi_scale(image, model, scales=[0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5], 
+                           window_size=(64, 64), stride=32, confidence_threshold=0.6):
     """
     Erkennt Autos in einem Bild mit Multi-Scale Sliding Window.
     
@@ -258,6 +258,8 @@ def detect_and_draw_cars(image_path, model, output_path, multi_scale=True):
     
     # Erstellen einzelner Bilder für jedes erkannte Auto
     for i, (x, y, w, h, conf) in enumerate(boxes):
+        # Convert coordinates to integers to avoid TypeError
+        x, y, w, h = int(x), int(y), int(w), int(h)
         car_image = image[y:y+h, x:x+w]
         car_image_with_box = car_image.copy()
         cv2.rectangle(car_image_with_box, (0, 0), (w, h), (0, 255, 0), 2)

@@ -1,20 +1,23 @@
-# CNN für Autoerkennung - Aufgabenliste
+# CNN Car Detection Project - Todo List
 
-## Aufgabe 1: CNN-Entwicklung
-- [x] CIFAR-10 Datensatz laden und vorbereiten
-- [ ] a) CNN mit Keras/TensorFlow zur Erkennung von Autos entwickeln
-- [ ] b) CNN ohne Verwendung von keras.models oder keras.layers implementieren
-- [ ] c) Vortrainiertes CNN aus dem Internet laden und trainieren
+## Bug Fixes
+- [x] Fix TypeError in 05_car_detection_on_images.py (slice indices must be integers)
+- [x] Adjust bounding box sizes in 05_car_detection_on_images.py to better fit cars
 
-## Aufgabe 2: Automerkennung auf Bildern
-- [ ] a) Autos auf drei gegebenen Bildern erkennen und Rahmen zeichnen
-- [ ] b) Autos auf drei weiteren Bildern aus dem Internet erkennen und Rahmen zeichnen
+## Documentation and Conversion
+- [x] Convert 01_cifar10_dataset_preparation.py to Jupyter notebook with documentation
+- [x] Convert 02_cnn_keras_tensorflow.py to Jupyter notebook with documentation
+- [x] Convert 03_custom_cnn_implementation.py to Jupyter notebook with documentation
+- [x] Convert 04_pretrained_cnn.py to Jupyter notebook with documentation
+- [x] Convert 05_car_detection_on_images.py to Jupyter notebook with documentation
+- [x] Convert 06_bonus_person_detection.py to Jupyter notebook with documentation
+- [x] Convert 07_documentation.py to Jupyter notebook with documentation
 
-## Bonus-Aufgabe
-- [ ] CNN zur Erkennung von Personen entwickeln
-- [ ] Personen und Autos auf drei weiteren Bildern erkennen und Rahmen zeichnen
+## Comprehensive Documentation
+- [x] Create detailed documentation about the development process
+- [x] Document challenges with overfitting and class imbalance in training
+- [ ] Document the different models tried during development
+- [ ] Document the car detection implementation and methodology
 
-## Dokumentation
-- [ ] Lösungsschritte in Textform beschreiben
-- [ ] Jupyter Notebooks erstellen
-- [ ] Ergebnisse in GitHub-Repository hochladen
+## Repository Management
+- [ ] Commit and push all changes to the repository
