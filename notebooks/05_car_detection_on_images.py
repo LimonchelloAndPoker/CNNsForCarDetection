@@ -19,10 +19,10 @@ from io import BytesIO
 from PIL import Image
 
 # Verzeichnisse
-models_dir = '../models'
-data_dir = '../data'
-images_dir = '../images'
-results_dir = '../results'
+models_dir = './models'
+data_dir = './data'
+images_dir = './images'
+results_dir = './results'
 
 os.makedirs(images_dir, exist_ok=True)
 os.makedirs(results_dir, exist_ok=True)
@@ -68,7 +68,7 @@ def load_and_preprocess_image(image_path, target_size=(32, 32)):
     return image, processed_image, (original_height, original_width)
 
 # Funktion zur Erkennung von Autos in einem Bild mit Sliding Window
-def detect_cars(image, model, window_size=(64, 64), stride=32, confidence_threshold=0.6):
+def detect_cars(image, model, window_size=(32, 32), stride=16, confidence_threshold=0.7):
     """
     Erkennt Autos in einem Bild mit Sliding Window.
     
@@ -185,8 +185,8 @@ def draw_boxes(image, boxes):
     return result
 
 # Funktion zur Erkennung von Autos in einem Bild mit Multi-Scale Sliding Window
-def detect_cars_multi_scale(image, model, scales=[0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5], 
-                           window_size=(64, 64), stride=32, confidence_threshold=0.6):
+def detect_cars_multi_scale(image, model, scales=[0.5, 0.75, 1.0, 1.25, 1.5], 
+                           window_size=(32, 32), stride=16, confidence_threshold=0.7):
     """
     Erkennt Autos in einem Bild mit Multi-Scale Sliding Window.
     
