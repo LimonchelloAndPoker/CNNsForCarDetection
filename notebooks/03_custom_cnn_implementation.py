@@ -14,8 +14,8 @@ import os
 import time
 
 # Verzeichnisse
-data_dir = '../data'
-models_dir = '../models'
+data_dir = './data'
+models_dir = './models/custom_cnn'
 os.makedirs(models_dir, exist_ok=True)
 
 # Laden der vorbereiteten Daten

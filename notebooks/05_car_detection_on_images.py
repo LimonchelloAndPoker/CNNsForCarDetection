@@ -30,7 +30,7 @@ os.makedirs(results_dir, exist_ok=True)
 # Laden des trainierten Modells
 print("Laden des trainierten Modells...")
 try:
-    model = load_model(os.path.join(models_dir, 'car_detection_model.keras'))
+    model = load_model(os.path.join(models_dir, 'keras_cnn', 'car_detection_model.keras'))
     print("Modell erfolgreich geladen.")
 except:
     print("Fehler beim Laden des Modells. Bitte stellen Sie sicher, dass das Modell trainiert wurde.")
@@ -68,7 +68,7 @@ def load_and_preprocess_image(image_path, target_size=(32, 32)):
     return image, processed_image, (original_height, original_width)
 
 # Funktion zur Erkennung von Autos in einem Bild mit Sliding Window
-def detect_cars(image, model, window_size=(32, 32), stride=16, confidence_threshold=0.7):
+def detect_cars(image, model, window_size=(32, 32), stride=16, confidence_threshold=0.9):
     """
     Erkennt Autos in einem Bild mit Sliding Window.
     
@@ -186,7 +186,7 @@ def draw_boxes(image, boxes):
 
 # Funktion zur Erkennung von Autos in einem Bild mit Multi-Scale Sliding Window
 def detect_cars_multi_scale(image, model, scales=[0.5, 0.75, 1.0, 1.25, 1.5], 
-                           window_size=(32, 32), stride=16, confidence_threshold=0.7):
+                           window_size=(32, 32), stride=16, confidence_threshold=0.9):
     """
     Erkennt Autos in einem Bild mit Multi-Scale Sliding Window.
     
@@ -276,20 +276,14 @@ print("Aufgabe 2a: Erkennung von Autos auf drei gegebenen Bildern...")
 
 # Erstellen von drei Testbildern mit Autos
 test_images = [
-    "https://cdn.pixabay.com/photo/2016/11/18/12/51/automobile-1834274_1280.jpg",
-    "https://cdn.pixabay.com/photo/2017/03/27/14/56/auto-2179220_1280.jpg",
-    "https://cdn.pixabay.com/photo/2016/04/01/12/16/car-1300629_1280.png"
+    f"{images_dir}/bild1.jpg",
+    f"{images_dir}/bild2.jpg",
+    f"{images_dir}/bild3.jpg"
 ]
 
 for i, image_url in enumerate(test_images):
     # Speichern des Bildes
-    image_path = os.path.join(images_dir, f'test_image_{i+1}.jpg')
-    
-    # Herunterladen des Bildes, wenn es noch nicht existiert
-    if not os.path.exists(image_path):
-        response = requests.get(image_url)
-        with open(image_path, 'wb') as f:
-            f.write(response.content)
+    image_path = os.path.join(images_dir, f'bild{i+1}.jpg')
     
     # Erkennen von Autos im Bild
     output_path = os.path.join(results_dir, f'test_image_{i+1}_result.jpg')
@@ -302,20 +296,14 @@ print("Aufgabe 2b: Erkennung von Autos auf drei weiteren Bildern aus dem Interne
 
 # Suchen nach Bildern mit mehreren Autos
 additional_images = [
-    "https://cdn.pixabay.com/photo/2017/11/23/04/13/traffic-jam-2972156_1280.jpg",
-    "https://cdn.pixabay.com/photo/2017/08/01/09/34/car-2563902_1280.jpg",
-    "https://cdn.pixabay.com/photo/2017/08/06/12/08/car-2592150_1280.jpg"
+    f"{images_dir}/bild1.jpg",
+    f"{images_dir}/bild2.jpg",
+    f"{images_dir}/bild3.jpg"
 ]
 
 for i, image_url in enumerate(additional_images):
     # Speichern des Bildes
-    image_path = os.path.join(images_dir, f'additional_image_{i+1}.jpg')
-    
-    # Herunterladen des Bildes, wenn es noch nicht existiert
-    if not os.path.exists(image_path):
-        response = requests.get(image_url)
-        with open(image_path, 'wb') as f:
-            f.write(response.content)
+    image_path = os.path.join(images_dir, f'bild{i+1}.jpg')
     
     # Erkennen von Autos im Bild
     output_path = os.path.join(results_dir, f'additional_image_{i+1}_result.jpg')

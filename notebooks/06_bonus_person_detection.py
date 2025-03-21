@@ -22,11 +22,11 @@ from io import BytesIO
 from PIL import Image
 
 # Verzeichnisse
-models_dir = '../models'
-data_dir = '../data'
-images_dir = '../images'
-results_dir = '../results'
-bonus_dir = '../bonus'
+models_dir = './models'
+data_dir = './data'
+images_dir = './images'
+results_dir = './results'
+bonus_dir = './bonus'
 
 os.makedirs(models_dir, exist_ok=True)
 os.makedirs(images_dir, exist_ok=True)

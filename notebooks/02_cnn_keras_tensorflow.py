@@ -18,8 +18,8 @@ from tensorflow.keras.optimizers import Adam
 import os
 
 # Verzeichnisse
-data_dir = '../data'
-models_dir = '../models'
+data_dir = './data'
+models_dir = './models'
 os.makedirs(models_dir, exist_ok=True)
 
 # Laden der vorbereiteten Daten
@@ -112,8 +112,8 @@ history = model.fit(
 )
 
 # Speichern des Modells
-model.save(os.path.join(models_dir, 'car_detection_model.keras'))
-print(f"Modell wurde gespeichert unter: {os.path.join(models_dir, 'car_detection_model.keras')}")
+model.save(os.path.join(models_dir, 'keras_cnn', 'car_detection_model.keras'))
+print(f"Modell wurde gespeichert unter: {os.path.join(models_dir, 'keras_cnn', 'car_detection_model.keras')}")
 
 # Evaluierung des Modells auf den Testdaten
 print("Evaluierung des Modells auf den Testdaten...")
@@ -143,8 +143,8 @@ plt.ylabel('Loss')
 plt.legend()
 
 plt.tight_layout()
-plt.savefig(os.path.join(models_dir, 'training_history.png'))
-print(f"Trainingsverlauf wurde gespeichert unter: {os.path.join(models_dir, 'training_history.png')}")
+plt.savefig(os.path.join(models_dir, 'keras_cnn', 'training_history.png'))
+print(f"Trainingsverlauf wurde gespeichert unter: {os.path.join(models_dir, 'keras_cnn', 'training_history.png')}")
 
 # Vorhersagen auf den Testdaten
 y_pred = model.predict(x_test)
@@ -177,8 +177,8 @@ for i in range(cm.shape[0]):
 plt.tight_layout()
 plt.ylabel('Tatsächliche Klasse')
 plt.xlabel('Vorhergesagte Klasse')
-plt.savefig(os.path.join(models_dir, 'confusion_matrix.png'))
-print(f"Konfusionsmatrix wurde gespeichert unter: {os.path.join(models_dir, 'confusion_matrix.png')}")
+plt.savefig(os.path.join(models_dir, 'keras_cnn', 'confusion_matrix.png'))
+print(f"Konfusionsmatrix wurde gespeichert unter: {os.path.join(models_dir, 'keras_cnn', 'confusion_matrix.png')}")
 
 # Visualisierung einiger Vorhersagen
 def plot_predictions(x, y_true, y_pred, class_names, num_images=25):
@@ -197,8 +197,8 @@ def plot_predictions(x, y_true, y_pred, class_names, num_images=25):
         plt.xlabel(f"P: {predicted}, A: {actual}", color=color)
     
     plt.tight_layout()
-    plt.savefig(os.path.join(models_dir, 'prediction_examples.png'))
-    print(f"Vorhersagebeispiele wurden gespeichert unter: {os.path.join(models_dir, 'prediction_examples.png')}")
+    plt.savefig(os.path.join(models_dir, 'keras_cnn', 'prediction_examples.png'))
+    print(f"Vorhersagebeispiele wurden gespeichert unter: {os.path.join(models_dir, 'keras_cnn', 'prediction_examples.png')}")
 
 # Zufällige Auswahl von Testbildern
 np.random.seed(42)

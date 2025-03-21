@@ -9,15 +9,15 @@ from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
 import matplotlib.pyplot as plt
 
 # Verzeichnisse erstellen
-models_dir = os.path.join('..', 'models')
+models_dir = os.path.join('.', 'models', 'pretrained_cnn')
 os.makedirs(models_dir, exist_ok=True)
 
 # Laden der vorbereiteten Daten
 print("Laden der vorbereiteten Daten...")
-x_train = np.load(os.path.join('..', 'data', 'x_train.npy'))
-y_train = np.load(os.path.join('..', 'data', 'y_train.npy'))
-x_test = np.load(os.path.join('..', 'data', 'x_test.npy'))
-y_test = np.load(os.path.join('..', 'data', 'y_test.npy'))
+x_train = np.load(os.path.join('.', 'data', 'x_train.npy'))
+y_train = np.load(os.path.join('.', 'data', 'y_train.npy'))
+x_test = np.load(os.path.join('.', 'data', 'x_test.npy'))
+y_test = np.load(os.path.join('.', 'data', 'y_test.npy'))
 
 print(f"Trainingsdaten: {len(x_train)} Bilder")
 print(f"Testdaten: {len(x_test)} Bilder")
