@@ -176,3 +176,4 @@ data/x_test.npy
 data/x_train.npy
 data/x_test.npy
 data/x_train.npy
+.envrc
