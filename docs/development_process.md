@@ -236,7 +236,7 @@ Implementing car detection on real-world images using sliding windows presented 
    - Using an IoU threshold of 0.3 for determining overlaps
 
 4. **Confidence Thresholding**: 
-   - Setting appropriate confidence thresholds (0.6-0.7)
+   - Setting appropriate confidence thresholds (0.6-0.9)
    - Different thresholds for different scales
 
 5. **Post-processing**: 
