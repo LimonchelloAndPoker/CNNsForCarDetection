@@ -1,72 +1,57 @@
+import os
 import cv2
 import torch
-import numpy as np
 from pathlib import Path
 
-def detect_and_crop_yolov5(model_path, image_path, output_dir='output', conf_thresh=0.5):
-    # YOLOv5 spezifisches Loading
-    model = torch.hub.load('ultralytics/yolov5', 'custom', path=model_path)
-    
-    # Ordner erstellen
-    Path(output_dir).mkdir(exist_ok=True)
-    full_output = Path(output_dir) / 'full'
-    crops_output = Path(output_dir) / 'crops'
-    full_output.mkdir(exist_ok=True)
-    crops_output.mkdir(exist_ok=True)
+# Load the YOLOv5 model via PyTorch Hub (this avoids serialization errors)
+model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
+model.eval()
 
-    # Inference mit YOLOv5
-    results = model(image_path)
-    
-    # Originalbild laden
-    img = cv2.imread(image_path)
-    if img is None:
-        raise FileNotFoundError(f"Bild nicht gefunden: {image_path}")
+# Target classes
+TARGET_CLASSES = ['person', 'car']
 
-    # Ergebnisparsing für YOLOv5
-    pandas_results = results.pandas().xyxy[0]
-    
-    # Boxen zeichnen und Crops speichern
-    for i, row in pandas_results.iterrows():
-        x1, y1, x2, y2 = map(int, [row['xmin'], row['ymin'], row['xmax'], row['ymax']])
-        
-        # Zeichne Box
-        cv2.rectangle(img, (x1, y1), (x2, y2), (0,255,0), 2)
-        cv2.putText(img, f"{row['name']} {row['confidence']:.2f}", 
-                   (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0,255,0), 2)
-        
-        # Speichere Crop
-        crop = img[y1:y2, x1:x2]
-        cv2.imwrite(str(crops_output / f"{Path(image_path).stem}_crop_{i}.jpg"), crop)
+def find_person_and_cars_in_folder(folder_path):
+    # Create output directories
+    base_output_dir = Path('Additional_results')
+    full_image_dir = base_output_dir / 'full_images'
+    cropped_dir = base_output_dir / 'cropped_images'
 
-    # Speichere volles Bild
-    full_path = full_output / f"{Path(image_path).stem}_detected.jpg"
-    cv2.imwrite(str(full_path), img)
-    
-    return str(full_path), [str(p) for p in crops_output.glob('*')]
+    full_image_dir.mkdir(parents=True, exist_ok=True)
+    cropped_dir.mkdir(parents=True, exist_ok=True)
+
+    for filename in os.listdir(folder_path):
+        if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
+            image_path = os.path.join(folder_path, filename)
+            image = cv2.imread(image_path)
+
+            # Inference
+            results = model(image)
+            detections = results.xyxy[0]  # (x1, y1, x2, y2, conf, cls)
+
+            detection_found = False
+            for idx, (*box, conf, cls) in enumerate(detections):
+                label = model.names[int(cls)]
+                if label in TARGET_CLASSES:
+                    detection_found = True
+                    x1, y1, x2, y2 = map(int, box)
+
+                    # Draw box and label
+                    cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                    cv2.putText(image, f"{label} {conf:.2f}", (x1, y1 - 10),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+
+                    # Save cropped detection
+                    crop = image[y1:y2, x1:x2]
+                    class_dir = cropped_dir / label
+                    class_dir.mkdir(parents=True, exist_ok=True)
+                    crop_filename = class_dir / f"{Path(filename).stem}_{idx}.jpg"
+                    cv2.imwrite(str(crop_filename), crop)
+
+            if detection_found:
+                full_image_output_path = full_image_dir / filename
+                cv2.imwrite(str(full_image_output_path), image)
+
+    print("Processing complete. Results saved in 'Additional_results/'.")
 
 
-
-# Erste Ausführung: YOLOv5 Dependencies laden
-torch.hub._validate_not_a_forked_repo=lambda a,b,c: True  # Fix für Colab
-
-
-
-
-MODEL_PFAD = "yolov5/runs/train/exp/weights/best.pt"
-BILD_PFAD = "../images/bild6.jpg"
-AUSGABE_ORDNER = "ergebnisse"
-KONFIDENZ = 0.4
-
-# Führe Detection aus
-vollbild, crops = detect_and_crop_yolov5(
-    model_path=MODEL_PFAD,
-    image_path=BILD_PFAD,
-    output_dir=AUSGABE_ORDNER,
-    conf_thresh=KONFIDENZ
-)
-
-# Ausgabe der Ergebnisse
-print(f"Ergebnisbild: {vollbild}")
-print(f"Gefundene Objekte: {len(crops)}")
-for crop in crops:
-    print(f" - {crop}")
+find_person_and_cars_in_folder("../images")

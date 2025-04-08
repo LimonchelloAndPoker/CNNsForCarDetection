@@ -1,7 +1,0 @@
-path: ../dataset
-train: images/train
-val: images/val
-test: images/test
-
-nc: 5
-names: ['Car', 'Motorcycle', 'Truck', 'Bus', 'Bicycle']

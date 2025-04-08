@@ -1,0 +1,1 @@
+This subfolder is just here to show how easy it can be when using a model that is designed for detetcion instead of classification.
